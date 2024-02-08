@@ -21,7 +21,7 @@ class ImportFrame(ctk.CTkFrame):
 
         # Create import button and place it in the center of the frame
         self.import_button = ctk.CTkButton(self, text="Import File", command=self.import_file)
-        self.import_button.grid(row=0, column=0, pady=10)
+        self.import_button.place(relx=0.5, rely=0.5, anchor="center")
 
     def import_file(self):
         # Open file dialog to select a file
@@ -86,32 +86,14 @@ class ImportFrame(ctk.CTkFrame):
             }
         }
 
+        # Create a scrollable frame for basic  per column
+        scrollable_frame_1 = ctk.CTkScrollableFrame(self, width=200, height=200)
+        scrollable_frame_1.grid(row=0, column=0, padx=20, pady=10, sticky="nsew")
 
-        # Create frames as containers for data with a border and rounded corners
-        data_frame_1 = ttk.Frame(self, borderwidth=1, relief="solid")
-        data_frame_1.grid(row=0, column=0, padx=(20, 10), pady=10, sticky="nw")
+        data_frame_1 = ctk.CTkFrame(scrollable_frame_1, corner_radius=5)
+        data_frame_1.pack(fill="x", padx=10, pady=5)
 
-        data_frame_2 = ttk.Frame(self, borderwidth=1, relief="solid")
-        data_frame_2.grid(row=0, column=1, padx=(10, 20), pady=10, sticky="nw")
-
-        # Create a scrollbar for the frames
-        scrollbar = ttk.Scrollbar(self, orient="vertical", command=self.scroll_function)
-        scrollbar.grid(row=0, column=2, sticky="ns")
-
-        # Create a canvas to contain the frames and attach the scrollbar
-        canvas = tk.Canvas(self, yscrollcommand=scrollbar.set)
-        canvas.grid(row=0, column=0, columnspan=3, sticky="nsew")
-
-        # Add the frames to the canvas
-        canvas.create_window((0, 0), window=data_frame_1, anchor="nw")
-        canvas.create_window((0, 0), window=data_frame_2, anchor="nw")
-
-        # Configure the canvas scroll region
-        canvas.update_idletasks()  # Update the canvas to calculate the size
-        canvas.config(scrollregion=canvas.bbox("all"))
-
-        # Create labels to display data profiling results in each container
-        # For data_frame_1
+        # Display number of rows, columns, and null values
         num_rows_label = ctk.CTkLabel(data_frame_1, text=f"Number of Rows: {profiling_data['num_rows']}")
         num_rows_label.grid(row=0, column=0, sticky="w")
 
@@ -121,23 +103,64 @@ class ImportFrame(ctk.CTkFrame):
         total_null_values_label = ctk.CTkLabel(data_frame_1, text=f"Total Null Values: {profiling_data['total_null_values']}")
         total_null_values_label.grid(row=2, column=0, sticky="w")
 
-        # For data_frame_2
+        # Create a scrollable frame for unique values per column
+        scrollable_frame_2 = ctk.CTkScrollableFrame(self, width=200, height=200)
+        scrollable_frame_2.grid(row=0, column=1, padx=20, pady=10, sticky="nsew")
+
+        data_frame_2 = ctk.CTkFrame(scrollable_frame_2, corner_radius=5)
+        data_frame_2.pack(fill="x", padx=10, pady=5)
+
+        # Display unique values per column
         unique_values_label = ctk.CTkLabel(data_frame_2, text="Unique Values per Column:")
-        unique_values_label.grid(row=0, column=0, sticky="w")
+        unique_values_label.pack(anchor="w")
         for i, (column, value) in enumerate(profiling_data["unique_values_per_column"].items()):
             label_text = f"{column}: {value}"
             label = ctk.CTkLabel(data_frame_2, text=label_text)
-            label.grid(row=i+1, column=0, sticky="w")
+            label.pack(anchor="w")
 
-        data_types_label = ctk.CTkLabel(data_frame_2, text="Data Types per Column:")
-        data_types_label.grid(row=0, column=1, sticky="w")
+        # Create a scrollable frame for data types per column
+        scrollable_frame_3 = ctk.CTkScrollableFrame(self, width=200, height=200)
+        scrollable_frame_3.grid(row=0, column=2, padx=20, pady=10, sticky="nsew")
+
+        data_frame_3 = ctk.CTkFrame(scrollable_frame_3, corner_radius=5)
+        data_frame_3.pack(fill="x", padx=10, pady=(5, 10))
+
+        # Display data types per column
+        data_types_label = ctk.CTkLabel(data_frame_3, text="Data Types per Column:")
+        data_types_label.pack(anchor="w")
         for i, (column, dtype) in enumerate(profiling_data["data_types_per_column"].items()):
             label_text = f"{column}: {dtype}"
-            label = ctk.CTkLabel(data_frame_2, text=label_text)
-            label.grid(row=i+1, column=1, sticky="w")
+            label = ctk.CTkLabel(data_frame_3, text=label_text)
+            label.pack(anchor="w")
 
-    def scroll_function(self, *args, canvas):
-        canvas.yview(*args)
+
+
+    def display_data_profiling_frame(self, scrollable_frame, data, is_unique_values=False, is_data_types=False):
+        # Create a frame for the data
+        data_frame = ctk.CTkFrame(scrollable_frame, corner_radius=5)
+        data_frame.pack(fill="both", padx=10, pady=10)
+
+        # Display data profiling results based on the type
+        if is_unique_values:
+            label_text = "Unique Values per Column:"
+            data_dict = data
+        elif is_data_types:
+            label_text = "Data Types per Column:"
+            data_dict = data
+        else:
+            label_text = "Number of Rows, Columns, and Total Null Values:"
+            data_dict = data
+
+        # Display label
+        label = ctk.CTkLabel(data_frame, text=label_text, font=("Arial", 12, "bold"))
+        label.pack(anchor="w", padx=10, pady=5)
+
+        # Display data
+        for key, value in data_dict.items():
+            text = f"{key}: {value}"
+            label = ctk.CTkLabel(data_frame, text=text)
+            label.pack(anchor="w", padx=10, pady=2)
+
 
 
         
